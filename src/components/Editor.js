@@ -25,6 +25,9 @@ export default function Editor({ currentNote, updateNote }) {
                 minEditorHeight={80}
                 heightUnits="vh"
             />
+            <p>This text editor will save the content to browser local storage, which means all the notes will delete once you clear browser cache or cookies.
+               <br/> First line of the note will be use as the name of the note
+            </p>
         </section>
     )
 }

@@ -1,5 +1,3 @@
-
-
 import React from "react"
 import Sidebar from "./components/Sidebar"
 import Editor from "./components/Editor"
@@ -7,21 +5,17 @@ import { data } from "./data"
 import Split from "react-split"
 import {nanoid} from "nanoid"
 
-
-
 export default function App() {
-   
-    const [notes, setNotes] = React.useState(JSON.parse(localStorage.getItem("links"))|| [])
+    const [notes, setNotes] = React.useState(
+        () => JSON.parse(localStorage.getItem("notes")) || []
+    )
     const [currentNoteId, setCurrentNoteId] = React.useState(
         (notes[0] && notes[0].id) || ""
     )
-
-
     
-    React.useEffect(()=>{
-        localStorage.setItem('links', JSON.stringify(notes))
-
-    },[notes])
+    React.useEffect(() => {
+        localStorage.setItem("notes", JSON.stringify(notes))
+    }, [notes])
     
     function createNewNote() {
         const newNote = {
@@ -33,13 +27,36 @@ export default function App() {
     }
     
     function updateNote(text) {
-        setNotes(oldNotes => oldNotes.map(oldNote => {
-            return oldNote.id === currentNoteId
-                ? { ...oldNote, body: text }
-                : oldNote
-        }))
+        // Put the most recently-modified note at the top
+        setNotes(oldNotes => {
+            const newArray = []
+            for(let i = 0; i < oldNotes.length; i++) {
+                const oldNote = oldNotes[i]
+                if(oldNote.id === currentNoteId) {
+                    newArray.unshift({ ...oldNote, body: text })
+                } else {
+                    newArray.push(oldNote)
+                }
+            }
+            return newArray
+        })
+    }
+
+
+    //this function will delete the note
+    
+      function deleteNote(event, noteId) {
+        event.stopPropagation()
+  
+      
+        setNotes(oldNotes => oldNotes.filter(oldNote => oldNote.id !== noteId ))
+      
+        
     }
     
+
+  
+    //this function will find the current note
     function findCurrentNote() {
         return notes.find(note => {
             return note.id === currentNoteId
@@ -48,11 +65,13 @@ export default function App() {
     
     return (
         <main>
+
+            
         {
             notes.length > 0 
             ?
             <Split 
-                sizes={[20, 80]} 
+                sizes={[30, 70]} 
                 direction="horizontal" 
                 className="split"
             >
@@ -61,6 +80,9 @@ export default function App() {
                     currentNote={findCurrentNote()}
                     setCurrentNoteId={setCurrentNoteId}
                     newNote={createNewNote}
+                    delete={deleteNote}
+                    
+                    
                 />
                 {
                     currentNoteId && 
@@ -68,7 +90,9 @@ export default function App() {
                     <Editor 
                         currentNote={findCurrentNote()} 
                         updateNote={updateNote} 
+                        
                     />
+                    
                 }
             </Split>
             :
@@ -83,6 +107,9 @@ export default function App() {
             </div>
             
         }
+
+
+        
         </main>
     )
 }
